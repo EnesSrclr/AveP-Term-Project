@@ -1,0 +1,294 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <math.h>
+
+/* * SABİTLER VE GEZEGEN VERİLERİ
+ * Merkür, Venüs, Dünya, Mars, Jüpiter, Satürn, Uranüs, Neptün
+ * Sırasıyla yerçekimi ivmeleri (m/s^2)
+ */
+const char *GEZEGEN_ISIMLERI[] = {"Merkur", "Venus", "Dunya", "Mars", "Jupiter", "Saturn", "Uranus", "Neptun"};
+const double GEZEGEN_GRAVITY[] = {3.70, 8.87, 9.807, 3.721, 24.79, 10.44, 8.87, 11.15};
+const int GEZEGEN_SAYISI = 8;
+
+
+void menuGoster();
+double mutlakDeger(double deger);
+void deneySerbestDusme(const double *g_ptr);
+void deneyYukariAtis(const double *g_ptr);
+void deneyAgirlik(const double *g_ptr);
+void deneyPotansiyelEnerji(const double *g_ptr);
+void deneyHidrostatikBasinc(const double *g_ptr);
+void deneyArsimet(const double *g_ptr);
+void deneySarkac(const double *g_ptr);
+void deneyIpGerilmesi(const double *g_ptr);
+void deneyAsansor(const double *g_ptr);
+
+int main() {
+    char bilimInsani[100];
+    int secim = 0;
+
+    // 1. Program Açılışı ve İsim İsteme
+    printf("==========================================\n");
+    printf("UZAY SIMULASYONUNA HOS GELDINIZ\n");
+    printf("==========================================\n");
+    printf("Lutfen bilim insaninin adini ve soyadini giriniz: ");
+    fgets(bilimInsani, sizeof(bilimInsani), stdin);
+    // Satır sonu karakterini temizle
+    bilimInsani[strcspn(bilimInsani, "\n")] = 0;
+
+    printf("\nHos geldin, Bilim Insani %s.\n", bilimInsani);
+
+
+    const double *g_ptr = GEZEGEN_GRAVITY;
+
+    // Ana Döngü
+    while (secim != -1) {
+        menuGoster();
+        printf("\nLutfen yapmak istediginiz deneyi secin (-1 Cikis): ");
+
+        if (scanf("%d", &secim) != 1) {
+            // Hatalı giriş (harf vb.) temizleme
+            while(getchar() != '\n');
+            printf("Gecersiz giris! Lutfen sayi giriniz.\n");
+            continue;
+        }
+
+        if (secim == -1) {
+            printf("Simulasyon sonlandiriliyor... Iyi gunler %s.\n", bilimInsani);
+            break;
+        }
+
+        printf("\n------------------------------------------\n");
+        switch (secim) {
+            case 1: deneySerbestDusme(g_ptr); break;
+            case 2: deneyYukariAtis(g_ptr); break;
+            case 3: deneyAgirlik(g_ptr); break;
+            case 4: deneyPotansiyelEnerji(g_ptr); break;
+            case 5: deneyHidrostatikBasinc(g_ptr); break;
+            case 6: deneyArsimet(g_ptr); break;
+            case 7: deneySarkac(g_ptr); break;
+            case 8: deneyIpGerilmesi(g_ptr); break;
+            case 9: deneyAsansor(g_ptr); break;
+            default: printf("Hatali secim! Lutfen 1-9 arasi bir deger girin.\n");
+        }
+        printf("------------------------------------------\n");
+    }
+
+    return 0;
+}
+
+// Menü Listesi
+void menuGoster() {
+    printf("\n--- DENEY LISTESI ---\n");
+    printf("1. Serbest Dusme Deneyi\n");
+    printf("2. Yukari Atis Deneyi\n");
+    printf("3. Agirlik Deneyi\n");
+    printf("4. Kutlecekimsel Potansiyel Enerji Deneyi\n");
+    printf("5. Hidrostatik Basinc Deneyi\n");
+    printf("6. Arsimet Kaldirma Kuvveti Deneyi\n");
+    printf("7. Basit Sarkac Periyodu Deneyi\n");
+    printf("8. Sabit Ip Gerilmesi Deneyi\n");
+    printf("9. Asansor Deneyi\n");
+}
+
+
+double mutlakDeger(double deger) {
+    return (deger < 0) ? -deger : deger;
+}
+
+// 1. Serbest Düşme: h = 0.5 * g * t^2
+void deneySerbestDusme(const double *g_ptr) {
+    double t;
+    printf("Serbest Dusme Deneyi Secildi.\n");
+    printf("Sureyi (t) saniye cinsinden giriniz: ");
+    scanf("%lf", &t);
+    t = mutlakDeger(t); // Negatif kontrolü
+
+    printf("\n%-10s | %-15s\n", "GEZEGEN", "YOL (h) [m]");
+    printf("---------------------------\n");
+
+    for (int i = 0; i < GEZEGEN_SAYISI; i++) {
+        // POINTER ARİTMETİĞİ: *(g_ptr + i)
+        double g = *(g_ptr + i);
+        double h = 0.5 * g * t * t;
+        printf("%-10s | %.2f m\n", GEZEGEN_ISIMLERI[i], h);
+    }
+}
+
+// 2. Yukarı Atış: h_max = v0^2 / (2g)
+void deneyYukariAtis(const double *g_ptr) {
+    double v0;
+    printf("Yukari Atis Deneyi Secildi.\n");
+    printf("Firlatma hizini (v0) m/s cinsinden giriniz: ");
+    scanf("%lf", &v0);
+    v0 = mutlakDeger(v0);
+
+    printf("\n%-10s | %-15s\n", "GEZEGEN", "H_MAX [m]");
+    printf("---------------------------\n");
+
+    for (int i = 0; i < GEZEGEN_SAYISI; i++) {
+        double g = *(g_ptr + i);
+        double h_max = (v0 * v0) / (2 * g);
+        printf("%-10s | %.2f m\n", GEZEGEN_ISIMLERI[i], h_max);
+    }
+}
+
+// 3. Ağırlık: G = m * g
+void deneyAgirlik(const double *g_ptr) {
+    double m;
+    printf("Agirlik Deneyi Secildi.\n");
+    printf("Kutleyi (m) kg cinsinden giriniz: ");
+    scanf("%lf", &m);
+    m = mutlakDeger(m);
+
+    printf("\n%-10s | %-15s\n", "GEZEGEN", "AGIRLIK (G) [N]");
+    printf("---------------------------\n");
+
+    for (int i = 0; i < GEZEGEN_SAYISI; i++) {
+        double g = *(g_ptr + i);
+        double G = m * g;
+        printf("%-10s | %.2f N\n", GEZEGEN_ISIMLERI[i], G);
+    }
+}
+
+// 4. Potansiyel Enerji: Ep = m * g * h
+void deneyPotansiyelEnerji(const double *g_ptr) {
+    double m, h;
+    printf("Potansiyel Enerji Deneyi Secildi.\n");
+    printf("Kutleyi (m) kg cinsinden giriniz: ");
+    scanf("%lf", &m);
+    m = mutlakDeger(m);
+
+    printf("Yuksekligi (h) m cinsinden giriniz: ");
+    scanf("%lf", &h);
+    h = mutlakDeger(h);
+
+    printf("\n%-10s | %-15s\n", "GEZEGEN", "ENERJI (Ep) [J]");
+    printf("---------------------------\n");
+
+    for (int i = 0; i < GEZEGEN_SAYISI; i++) {
+        double g = *(g_ptr + i);
+        double Ep = m * g * h;
+        printf("%-10s | %.2f J\n", GEZEGEN_ISIMLERI[i], Ep);
+    }
+}
+
+// 5. Hidrostatik Basınç: P = rho * g * h
+void deneyHidrostatikBasinc(const double *g_ptr) {
+    double rho, h;
+    printf("Hidrostatik Basinc Deneyi Secildi.\n");
+    printf("Sivi yogunlugunu (rho) kg/m^3 cinsinden giriniz: ");
+    scanf("%lf", &rho);
+    rho = mutlakDeger(rho);
+
+    printf("Derinligi (h) m cinsinden giriniz: ");
+    scanf("%lf", &h);
+    h = mutlakDeger(h);
+
+    printf("\n%-10s | %-15s\n", "GEZEGEN", "BASINC (P) [Pa]");
+    printf("---------------------------\n");
+
+    for (int i = 0; i < GEZEGEN_SAYISI; i++) {
+        double g = *(g_ptr + i);
+        double P = rho * g * h;
+        printf("%-10s | %.2f Pa\n", GEZEGEN_ISIMLERI[i], P);
+    }
+}
+
+// 6. Arşimet: Fk = rho * g * V
+void deneyArsimet(const double *g_ptr) {
+    double rho, V;
+    printf("Arsimet Kaldirma Kuvveti Deneyi Secildi.\n");
+    printf("Sivi yogunlugunu (rho) kg/m^3 cinsinden giriniz: ");
+    scanf("%lf", &rho);
+    rho = mutlakDeger(rho);
+
+    printf("Batan hacmi (V) m^3 cinsinden giriniz: ");
+    scanf("%lf", &V);
+    V = mutlakDeger(V);
+
+    printf("\n%-10s | %-15s\n", "GEZEGEN", "KALDIRMA (Fk) [N]");
+    printf("---------------------------\n");
+
+    for (int i = 0; i < GEZEGEN_SAYISI; i++) {
+        double g = *(g_ptr + i);
+        double Fk = rho * g * V;
+        printf("%-10s | %.2f N\n", GEZEGEN_ISIMLERI[i], Fk);
+    }
+}
+
+// 7. Basit Sarkaç: T = 2 * pi * sqrt(L/g)
+void deneySarkac(const double *g_ptr) {
+    double L;
+    const double PI = 3.1415926535;
+    printf("Basit Sarkac Deneyi Secildi.\n");
+    printf("Sarkac uzunlugunu (L) m cinsinden giriniz: ");
+    scanf("%lf", &L);
+    L = mutlakDeger(L);
+
+    printf("\n%-10s | %-15s\n", "GEZEGEN", "PERIYOT (T) [s]");
+    printf("---------------------------\n");
+
+    for (int i = 0; i < GEZEGEN_SAYISI; i++) {
+        double g = *(g_ptr + i);
+        double T = 2 * PI * sqrt(L / g);
+        printf("%-10s | %.2f s\n", GEZEGEN_ISIMLERI[i], T);
+    }
+}
+
+// 8. İp Gerilmesi: T = m * g
+void deneyIpGerilmesi(const double *g_ptr) {
+    double m;
+    printf("Sabit Ip Gerilmesi Deneyi Secildi.\n");
+    printf("Kutleyi (m) kg cinsinden giriniz: ");
+    scanf("%lf", &m);
+    m = mutlakDeger(m);
+
+    printf("\n%-10s | %-15s\n", "GEZEGEN", "GERILME (T) [N]");
+    printf("---------------------------\n");
+
+    for (int i = 0; i < GEZEGEN_SAYISI; i++) {
+        double g = *(g_ptr + i);
+        double T = m * g;
+        printf("%-10s | %.2f N\n", GEZEGEN_ISIMLERI[i], T);
+    }
+}
+
+// 9. Asansör Deneyi: N = m(g+a) veya m(g-a)
+void deneyAsansor(const double *g_ptr) {
+    double m, a;
+    int durum;
+    printf("Asansor Deneyi Secildi.\n");
+    printf("Kutleyi (m) kg cinsinden giriniz: ");
+    scanf("%lf", &m);
+    m = mutlakDeger(m);
+
+    printf("Asansor ivmesini (a) m/s^2 cinsinden giriniz: ");
+    scanf("%lf", &a);
+    a = mutlakDeger(a);
+
+    printf("Durum Seciniz:\n");
+    printf("1. Yukari Hizlanan / Asagi Yavaslayan (g + a)\n");
+    printf("2. Asagi Hizlanan / Yukari Yavaslayan (g - a)\n");
+    printf("Secim: ");
+    scanf("%d", &durum);
+
+    printf("\n%-10s | %-15s\n", "GEZEGEN", "ETKIN AGIRLIK (N)");
+    printf("---------------------------\n");
+
+    for (int i = 0; i < GEZEGEN_SAYISI; i++) {
+        double g = *(g_ptr + i);
+        double N;
+
+
+        if (durum == 1) {
+            N = m * (g + a);
+        } else {
+            N = m * (g - a);
+            // Fiziksel olarak ip gerilmesi negatif olamaz, cisim havada kalır.
+            N = (N < 0) ? 0 : N;
+        }
+        printf("%-10s | %.2f N\n", GEZEGEN_ISIMLERI[i], N);
+    }
+}
